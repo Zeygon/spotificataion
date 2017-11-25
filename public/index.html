@@ -1,52 +1,60 @@
 <!DOCTYPE html>
 <html>
-<head>
-  <title>Welcome to Vue</title>
-  <script src="https://unpkg.com/vue"></script>
-</head>
-<body>
-  <div id="app">
-    <img src="https://vuejs.org/images/logo.png" alt="Vue logo">
-    <h1>{{ greeting }}</h1>
-    <ul>
-      <li>
-        To learn more about Vue, visit
-        <a :href="docsURL" target="_blank">
-          {{ humanizeURL(docsURL) }}
-        </a>
-      </li>
-      <li>
-        For live help with simple questions, check out
-        <a :href="discordURL" target="_blank">
-          the Discord chat
-        </a>
-      </li>
-      <li>
-        For more complex questions, post to
-        <a :href="forumURL" target="_blank">
-          the forum
-        </a>
-      </li>
-    </ul>
-  </div>
 
-  <script>
-    var app = new Vue({
-      el: '#app',
-      data: {
-        greeting: 'Welcome to your Vue.js app!',
-        docsURL: 'http://vuejs.org/guide/',
-        discordURL: 'https://chat.vuejs.org',
-        forumURL: 'http://forum.vuejs.org/'
-      },
-      methods: {
-        humanizeURL: function (url) {
-          return url
-            .replace(/^https?:\/\//, '')
-            .replace(/\/$/, '')
-        }
-      }
-    })
-  </script>
+<head>
+
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Welcome to Vue</title>
+    <link href="https://fonts.googleapis.com/css?family=Pacifico" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css?family=VT323" rel="stylesheet">
+    <link href="https://unpkg.com/basscss@8.0.2/css/basscss.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="style.css">
+    <script src="https://unpkg.com/vue"></script>
+</head>
+
+<body>
+    <div id="app">
+
+        <img src="unicorn.svg" alt="">
+
+        <main class="px3">
+            <h1 class="greeting">{{greeting}}</h1>
+            <div class="center">
+                <a class="btn mx-auto" v-on:click="show_overlay = !show_overlay">SMILE :)</a>
+            </div>
+        </main>
+
+        <div class="overlay center" v-if="show_overlay">
+            <h3 class="my0 center">You're feeling</h3>
+            <h2 class="my1 center">{{mood}}</h2>
+            <h3 class="my0 center">Your song is</h3>
+            <h2 class="my1 center">{{song_title}}</h2>
+            <h3 class="my0 center">by</h3>
+            <h2 class="my1 center">{{song_artist}}</h2>
+            <a class="center mx-auto fixed bottom right p1" v-on:click="show_overlay = !show_overlay">X</a>
+        </div>
+    </div>
+
+    <script>
+        var app = new Vue({
+            el: '#app',
+            data: {
+                greeting: 'Welcome to your Spotification',
+                mood: 'swifty',
+                song_artist: 'SSIO',
+                song_title: 'Nullkommaneun',
+                show_overlay: false
+            },
+            methods: {
+                humanizeURL: function(url) {
+                    return url
+                        .replace(/^https?:\/\//, '')
+                        .replace(/\/$/, '')
+                }
+            }
+        })
+    </script>
 </body>
+
 </html>
