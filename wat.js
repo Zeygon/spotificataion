@@ -6,6 +6,10 @@ const file = 'orange.jpeg'
 
 const postData = Buffer(fs.readFileSync(file).toString('binary'),'binary');
 
+const postData2 = JSON.stringify({
+  url: "https://upload.wikimedia.org/wikipedia/commons/thumb/7/7b/Richard_Stallman_-_F%C3%AAte_de_l%27Humanit%C3%A9_2014_-_010.jpg/800px-Richard_Stallman_-_F%C3%AAte_de_l%27Humanit%C3%A9_2014_-_010.jpg"
+})
+
 console.log(postData);
 
 const options = {
@@ -14,7 +18,7 @@ const options = {
   path: '/emotion/v1.0/recognize?',
   method: 'POST',
   headers: {
-    'Content-Type': 'application/octet-stream',
+    'Content-Type': 'application/json',
     'Ocp-Apim-Subscription-Key': '0249d1bf35c44789a9fac14b19a330d0',
     //'Content-Length': Buffer.byteLength(postData)
   }
@@ -37,5 +41,5 @@ req.on('error', (e) => {
 });
 
 // write data to request body
-req.write(postData);
+req.write(postData2);
 req.end();
