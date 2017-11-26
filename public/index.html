@@ -19,9 +19,13 @@
         <img src="unicorn.svg" alt="">
 
         <main class="px3">
-            <h1 class="greeting">{{greeting}}</h1>
+            <!-- <h1 class="greeting">{{greeting}}</h1> -->
+            ---
+            <video autoplay src=""></video> ---
+            <canvas id="canvas" width="300" height="300"></canvas>
             <div class="center">
-                <a class="btn mx-auto" v-on:click="show_overlay = !show_overlay">SMILE :)</a>
+
+                <a class="btn mx-auto" v-on:click="grab()">SMILE :)</a>
             </div>
         </main>
 
@@ -33,10 +37,32 @@
             <h3 class="my0 center">by</h3>
             <h2 class="my1 center">{{song_artist}}</h2>
             <a class="center mx-auto fixed bottom right p1" v-on:click="show_overlay = !show_overlay">X</a>
+            <input type="image"></image>
         </div>
     </div>
 
+    <script src="selfie.js"></script>
     <script>
+        // var imageCapture;
+
+        const s = selfie.init();
+
+
+        // window.onload = function() {
+        //     navigator.mediaDevices.getUserMedia({
+        //             video: true
+        //         })
+        //         .then(mediaStream => {
+        //             document.querySelector('video').srcObject = mediaStream;
+        //
+        //             const track = mediaStream.getVideoTracks()[0];
+        //             imageCapture = new ImageCapture(track);
+        //         })
+        //         .catch(error => ChromeSamples.log(error));
+        // }
+
+
+
         var app = new Vue({
             el: '#app',
             data: {
@@ -51,6 +77,37 @@
                     return url
                         .replace(/^https?:\/\//, '')
                         .replace(/\/$/, '')
+                },
+                grab: function() {
+                    const _this = this;
+                    // imageCapture.grabFrame()
+                    //     .then(imageBitmap => {
+                    //         alert(imageBitmap);
+                    //     })
+                    //     .catch(error => ChromeSamples.log(error));
+                    s.takePhoto(); // method to take photo.
+                },
+                makeblob: function(dataURL) {
+                    var BASE64_MARKER = ';base64,';
+                    if (dataURL.indexOf(BASE64_MARKER) === -1) {
+                        var parts = dataURL.split(',');
+                        var contentType = parts[0].split(':')[1];
+                        var raw = decodeURIComponent(parts[1]);
+                        return new Blob([raw], {
+                            type: contentType
+                        });
+                    }
+                    var parts = dataURL.split(BASE64_MARKER);
+                    var contentType = parts[0].split(':')[1];
+                    var raw = window.atob(parts[1]);
+                    var rawLength = raw.length;
+                    var uInt8Array = new Uint8Array(rawLength);
+                    for (var i = 0; i < rawLength; ++i) {
+                        uInt8Array[i] = raw.charCodeAt(i);
+                    }
+                    return new Blob([uInt8Array], {
+                        type: contentType
+                    });
                 }
             }
         })

@@ -1,0 +1,191 @@
+<!doctype html>
+<html lang="en">
+
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+    <title>Emotion Detect</title>
+    <!-- Fonts -->
+    <link href="https://fonts.googleapis.com/css?family=Raleway:100,600" rel="stylesheet" type="text/css">
+    <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0-alpha.6/css/bootstrap.min.css" integrity="sha384-rwoIResjU2yc3z8GV/NPeZWAv56rSmLldC3R/AZzGRnGxQQKnKkoFVhFQhNUwEyJ" crossorigin="anonymous">
+
+    <link href="https://fonts.googleapis.com/css?family=Pacifico" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css?family=VT323" rel="stylesheet">
+    <link href="https://unpkg.com/basscss@8.0.2/css/basscss.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="style.css">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.2.1/jquery.js"></script>
+    <script>
+        //Camera Capture ref: https://davidwalsh.name/browser-camera
+        // Put event listeners into place
+        window.addEventListener("DOMContentLoaded", function() {
+            // Grab elements, create settings, etc.
+            var canvas = document.getElementById('canvas');
+            var context = canvas.getContext('2d');
+            var video = document.getElementById('video');
+            var mediaConfig = {
+                video: true
+            };
+            var errBack = function(e) {
+                console.log('An error has occurred!', e)
+            };
+            // Put video listeners into place
+            if (navigator.mediaDevices && navigator.mediaDevices.getUserMedia) {
+                navigator.mediaDevices.getUserMedia(mediaConfig).then(function(stream) {
+                    video.src = window.URL.createObjectURL(stream);
+                    video.play();
+                });
+            }
+            /* Legacy code below! */
+            else if (navigator.getUserMedia) { // Standard
+                navigator.getUserMedia(mediaConfig, function(stream) {
+                    video.src = stream;
+                    video.play();
+                }, errBack);
+            } else if (navigator.webkitGetUserMedia) { // WebKit-prefixed
+                navigator.webkitGetUserMedia(mediaConfig, function(stream) {
+                    video.src = window.webkitURL.createObjectURL(stream);
+                    video.play();
+                }, errBack);
+            } else if (navigator.mozGetUserMedia) { // Mozilla-prefixed
+                navigator.mozGetUserMedia(mediaConfig, function(stream) {
+                    video.src = window.URL.createObjectURL(stream);
+                    video.play();
+                }, errBack);
+            }
+            // Trigger photo take
+            document.getElementById('snap').addEventListener('click', function() {
+
+                setTimeout(function() {
+                    $('.wrapper').addClass('booth--shooting');
+                }, 500);
+
+
+                context.drawImage(video, 0, 0, 640, 480);
+                $('video').toggleClass('invisible');
+                $('canvas').toggleClass('invisible');
+                var canvas = document.getElementById('canvas').toDataURL();
+                //                    console.log(canvas);
+                getEmotions(canvas);
+            });
+            // Trigger photo take
+            $('.closer').click(function() {
+                $('.overlay').toggleClass('invisible');
+            })
+        }, false);
+        makeblob = function(dataURL) {
+            var BASE64_MARKER = ';base64,';
+            if (dataURL.indexOf(BASE64_MARKER) === -1) {
+                var parts = dataURL.split(',');
+                var contentType = parts[0].split(':')[1];
+                var raw = decodeURIComponent(parts[1]);
+                return new Blob([raw], {
+                    type: contentType
+                });
+            }
+            var parts = dataURL.split(BASE64_MARKER);
+            var contentType = parts[0].split(':')[1];
+            var raw = window.atob(parts[1]);
+            var rawLength = raw.length;
+            var uInt8Array = new Uint8Array(rawLength);
+            for (var i = 0; i < rawLength; ++i) {
+                uInt8Array[i] = raw.charCodeAt(i);
+            }
+            return new Blob([uInt8Array], {
+                type: contentType
+            });
+        };
+        //Emotion Script ref: https://docs.microsoft.com/en-us/azure/cognitive-services/emotion/quickstarts/javascript
+        //Send Image to Azure Emotion api ref: https://stackoverflow.com/a/34064793/5704410
+        function getEmotions(file_image) {
+            // No query string parameters for this API call.
+            var params = {};
+            api_key = '7f1d60230a56436ca786a6d4eb3de6c4';
+            $.ajax({
+                url: "https://westus.api.cognitive.microsoft.com/emotion/v1.0/recognize?" + $.param(params),
+                processData: false,
+                contentType: 'application/octet-stream',
+                type: "POST",
+                data: makeblob(file_image),
+                beforeSend: function(xhrObj) {
+                    xhrObj.setRequestHeader("Ocp-Apim-Subscription-Key", api_key);
+                }
+
+            }).done(function(data) {
+                // Get face rectangle dimensions
+                var data0 = data[0];
+                if (!data0) {
+                    alert('Face not detected, try again!');
+                    return;
+                }
+                // Get emotion confidence scores
+                var scores = data[0].scores;
+                console.log(scores);
+                var scoresList = $('#scores');
+                scoresList.empty();
+                // Append to DOM
+
+                let str_mood = '';
+                for (var score in scores) {
+                    if (scores[score] > 0.3) {
+                        if (str_mood !== '') {
+                            str_mood += ' and '
+                        }
+                        str_mood += score;
+                        console.log(score + ' : ' + scores[score]);
+                    }
+                }
+
+                $('.mood').text(str_mood);
+                $('.song_title').text('Bang Bang');
+                $('.artist').text('Hustensaft Jüngling');
+                $('.overlay').toggleClass('invisible');
+                $('canvas').toggleClass('invisible');
+                $('video').toggleClass('invisible');
+
+            }).fail(function(err) {
+                alert("Error: " + JSON.stringify(err));
+                $('body').css('background-color: red');
+            });
+        }
+    </script>
+</head>
+
+<body>
+    <div class="wrapper">
+
+        <div class="container-fluid">
+            <div class="row">
+                <div class="col-md-12">
+                    <div class="content">
+                        <div class="title m-b-md">
+                            <form action="#">
+                                <div class="form-group center mx-auto pt4">
+                                    <video id="video" width="640" height="480" autoplay></video>
+                                    <canvas class="invisible" id="canvas" width="640" height="480"></canvas>
+                                </div>
+                                <div class="center mx-auto">
+                                    <a id="snap" class="center snap">Snap It!</a>
+                                </div>
+                            </form>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="overlay center invisible p3 pt4" v-if="show_overlay">
+            <a class="center mx-auto right p1 closer" v-on:click="show_overlay = !show_overlay">X</a>
+            <h3 class="my0 center">You're feeling</h3>
+            <h2 class="my1 center mood">{{mood}}</h2>
+            <h3 class="my0 center">Your song is</h3>
+            <h2 class="my1 center song_title">{{song_title}}</h2>
+            <h3 class="my0 center">by</h3>
+            <h2 class="my1 center artist">{{song_artist}}</h2>
+        </div>
+        <div class='camera__flash'></div>
+    </div>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/tether/1.4.0/js/tether.min.js" integrity="sha384-DztdAPBWPRXSA/3eYEEUWrWCy7G5KFbe8fFjk5JAIxUYHKkDx6Qin1DkWx51bBrb" crossorigin="anonymous"></script>
+    <script src="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0-alpha.6/js/bootstrap.min.js" integrity="sha384-vBWWzlZJ8ea9aCX4pEW3rVHjgjt7zpkNpZk+02D9phzyeVkE+jo0ieGizqPLForn" crossorigin="anonymous"></script>
+</body>
+
+</html>
