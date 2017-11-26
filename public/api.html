@@ -46,6 +46,19 @@
             // Ready
             player.on('ready', data => {
                 console.log('Ready with Device ID', data.device_id);
+                $.ajax({
+                    url: "https://api.spotify.com/v1/me/player",
+                    method: 'PUT',
+                    contentType: "application/json",
+                    data: JSON.stringify({
+                        "device_ids": [data.device_id]
+                    }),
+                    beforeSend: function(xhrObj) {
+                        xhrObj.setRequestHeader("Authorization", "Bearer " + _token);
+                    }
+                }).done(res => {
+                    console.log("Hier läuft.")
+                })
             });
 
             // Connect to the player!
@@ -176,10 +189,12 @@
                 }
 
                 var songAttributes = {
-                    valence: Math.max(1, scores["happiness"] + scores["neutral"]),
-                    energy: Math.max(1, scores["anger"] + scores["surprise"]),
-                    acousticness: Math.max(scores["sadness"] + scores["contempt"], 1)
+                    valence: Math.max(Math.random(), scores["happiness"] + scores["neutral"]),
+                    energy: Math.max(Math.random(), scores["anger"] + scores["surprise"]),
+                    acousticness: Math.max(scores["sadness"] + scores["contempt"], Math.random())
                 };
+
+                console.log(songAttributes);
 
                 var superRandomSeedGenres = [
                     "electro",
@@ -189,28 +204,52 @@
                     "hard_rock"
                 ];
 
-                var requestURL = "https://api.spotify.com/v1/recommendations?";
-                requestURL += "target_valence=" + songAttributes.valence + "&";
-                requestURL += "target_energy=" + songAttributes.energy + "&";
-                requestURL += "target_acousticness=" + songAttributes.acousticness + "&";
-                requestURL += "seed_genres=" + superRandomSeedGenres.join(",") + "&";
-                requestURL += "limit=1";
+                //requestURL geht besser in den Callback rein
 
-                var requestURL2 = "https://api.spotify.com/v1/recommendations?seed_artists=4NHQUGzhtTLFvgF5SZesLK&seed_tracks=0c6xIDDpzE81m2q797ordA&min_energy=0.4&min_popularity=50&market=US";
+                var requestURL = "https://api.spotify.com/v1/recommendations?";
 
                 $.ajax({
-                    url: requestURL2,
-                    type: 'PUT',
+                    url: "https://api.spotify.com/v1/browse/categories?limit=5",
+                    method: 'GET',
                     beforeSend: function(xhrObj) {
                         xhrObj.setRequestHeader("Authorization", "Bearer " + _token);
                     }
                 }).done(data => {
-                    console.log(data.body);
+                    console.log(data);
+                    requestURL += "target_valence=" + songAttributes.valence + "&";
+                    requestURL += "target_energy=" + songAttributes.energy + "&";
+                    requestURL += "target_acousticness=" + songAttributes.acousticness + "&";
+                    requestURL += "seed_genres=" + superRandomSeedGenres.join(",") + "&";
+                    requestURL += "limit=1";
+                    $.ajax({
+                        url: requestURL,
+                        type: 'GET',
+                        beforeSend: function(xhrObj) {
+                            xhrObj.setRequestHeader("Authorization", "Bearer " + _token);
+                        }
+                    }).done(data => {
+                        console.log(data.tracks[0].id);
+                        console.log(data.tracks[0]);
+                        $('.artist').text(data.tracks[0].artists[0].name);
+                        $('.song_title').text(data.tracks[0].name);
+                        $.ajax({
+                            url: "https://api.spotify.com/v1/me/player/play",
+                            method: 'PUT',
+                            contentType: "application/json",
+                            data: JSON.stringify({
+                                "uris": ["spotify:track:" + data.tracks[0].id]
+                            }),
+                            beforeSend: function(xhrObj) {
+                                xhrObj.setRequestHeader("Authorization", "Bearer " + _token);
+                            }
+                        }).done(res => {
+                            console.log("I am playing!");
+                        })
+                    })
                 })
 
                 $('.mood').text(str_mood);
-                $('<div class="song_"></div>title').text('Bang Bang');
-                $('.artist').text('Hustensaft Jüngling');
+
                 $('.overlay').toggleClass('invisible');
                 $('canvas').toggleClass('invisible');
                 $('video').toggleClass('invisible');
@@ -235,7 +274,7 @@
                                     <canvas class="invisible" id="canvas" width="640" height="480"></canvas>
                                 </div>
                                 <div class="center mx-auto">
-                                    <a id="snap" class="center snap">Snap It!</a>
+                                    <a id="snap" class="center snap">Meine Boys kommen mit der Glock!</a>
                                 </div>
                             </form>
                         </div>
