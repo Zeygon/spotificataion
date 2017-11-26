@@ -1,10 +1,12 @@
 const http = require('http');
 const fs = require('fs');
+const SpotifyWebApi = require("spotify-web-api-node");
+var spotifyApi = new SpotifyWebApi();
 
 
 const file = 'orange.jpeg'
 
-const postData = Buffer(fs.readFileSync(file).toString('binary'),'binary');
+const postData = Buffer(fs.readFileSync(file).toString('binary'), 'binary');
 
 const postData2 = JSON.stringify({
   url: "https://upload.wikimedia.org/wikipedia/commons/thumb/7/7b/Richard_Stallman_-_F%C3%AAte_de_l%27Humanit%C3%A9_2014_-_010.jpg/800px-Richard_Stallman_-_F%C3%AAte_de_l%27Humanit%C3%A9_2014_-_010.jpg"

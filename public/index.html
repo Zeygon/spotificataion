@@ -10,10 +10,41 @@
     <link href="https://fonts.googleapis.com/css?family=VT323" rel="stylesheet">
     <link href="https://unpkg.com/basscss@8.0.2/css/basscss.min.css" rel="stylesheet">
     <link rel="stylesheet" href="style.css">
+    <script src="initspotify.js"></script>
+    <script src="https://sdk.scdn.co/spotify-player.js"></script>
     <script src="https://unpkg.com/vue"></script>
+    </script>
 </head>
 
 <body>
+    <script>
+        window.onSpotifyPlayerAPIReady = () => {
+            const token = _token;
+            const player = new Spotify.Player({
+                name: 'Web Playback SDK Quick Start Player',
+                getOAuthToken: cb => {
+                    cb(token);
+                }
+            });
+
+            // Error handling
+            player.on('initialization_error', e => console.error(e));
+            player.on('authentication_error', e => console.error(e));
+            player.on('account_error', e => console.error(e));
+            player.on('playback_error', e => console.error(e));
+
+            // Playback status updates
+            player.on('player_state_changed', state => console.log(state));
+
+            // Ready
+            player.on('ready', data => {
+                console.log('Ready with Device ID', data.device_id);
+            });
+
+            // Connect to the player!
+            player.connect();
+        }
+    </script>
     <div id="app">
 
         <img src="unicorn.svg" alt="">

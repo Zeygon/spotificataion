@@ -13,10 +13,50 @@
     <link href="https://fonts.googleapis.com/css?family=VT323" rel="stylesheet">
     <link href="https://unpkg.com/basscss@8.0.2/css/basscss.min.css" rel="stylesheet">
     <link rel="stylesheet" href="style.css">
+
+
+
+</head>
+
+<body>
+
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.2.1/jquery.js"></script>
+    <script src="initspotify.js"></script>
+
+    <script src="https://sdk.scdn.co/spotify-player.js"></script>
+    <script>
+        window.onSpotifyPlayerAPIReady = () => {
+            const token = _token;
+            const player = new Spotify.Player({
+                name: 'SnapTrack Player',
+                getOAuthToken: cb => {
+                    cb(token);
+                }
+            });
+
+            // Error handling
+            player.on('initialization_error', e => console.error(e));
+            player.on('authentication_error', e => console.error(e));
+            player.on('account_error', e => console.error(e));
+            player.on('playback_error', e => console.error(e));
+
+            // Playback status updates
+            player.on('player_state_changed', state => console.log(state));
+
+            // Ready
+            player.on('ready', data => {
+                console.log('Ready with Device ID', data.device_id);
+            });
+
+            // Connect to the player!
+            player.connect();
+        };
+    </script>
+
     <script>
         //Camera Capture ref: https://davidwalsh.name/browser-camera
         // Put event listeners into place
+
         window.addEventListener("DOMContentLoaded", function() {
             // Grab elements, create settings, etc.
             var canvas = document.getElementById('canvas');
@@ -135,8 +175,41 @@
                     }
                 }
 
+                var songAttributes = {
+                    valence: Math.max(1, scores["happiness"] + scores["neutral"]),
+                    energy: Math.max(1, scores["anger"] + scores["surprise"]),
+                    acousticness: Math.max(scores["sadness"] + scores["contempt"], 1)
+                };
+
+                var superRandomSeedGenres = [
+                    "electro",
+                    "hip_hop",
+                    "country",
+                    "blues",
+                    "hard_rock"
+                ];
+
+                var requestURL = "https://api.spotify.com/v1/recommendations?";
+                requestURL += "target_valence=" + songAttributes.valence + "&";
+                requestURL += "target_energy=" + songAttributes.energy + "&";
+                requestURL += "target_acousticness=" + songAttributes.acousticness + "&";
+                requestURL += "seed_genres=" + superRandomSeedGenres.join(",") + "&";
+                requestURL += "limit=1";
+
+                var requestURL2 = "https://api.spotify.com/v1/recommendations?seed_artists=4NHQUGzhtTLFvgF5SZesLK&seed_tracks=0c6xIDDpzE81m2q797ordA&min_energy=0.4&min_popularity=50&market=US";
+
+                $.ajax({
+                    url: requestURL2,
+                    type: 'PUT',
+                    beforeSend: function(xhrObj) {
+                        xhrObj.setRequestHeader("Authorization", "Bearer " + _token);
+                    }
+                }).done(data => {
+                    console.log(data.body);
+                })
+
                 $('.mood').text(str_mood);
-                $('.song_title').text('Bang Bang');
+                $('<div class="song_"></div>title').text('Bang Bang');
                 $('.artist').text('Hustensaft Jüngling');
                 $('.overlay').toggleClass('invisible');
                 $('canvas').toggleClass('invisible');
@@ -148,9 +221,7 @@
             });
         }
     </script>
-</head>
 
-<body>
     <div class="wrapper">
 
         <div class="container-fluid">
