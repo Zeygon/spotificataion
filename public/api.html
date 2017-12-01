@@ -152,7 +152,7 @@
         function getEmotions(file_image) {
             // No query string parameters for this API call.
             var params = {};
-            api_key = '7f1d60230a56436ca786a6d4eb3de6c4';
+            api_key = 'INSERT API KEY HERE';
             $.ajax({
                 url: "https://westus.api.cognitive.microsoft.com/emotion/v1.0/recognize?" + $.param(params),
                 processData: false,
@@ -188,10 +188,12 @@
                     }
                 }
 
+                //Highly sophisticated algorithm, duh.
+
                 var songAttributes = {
-                    valence: Math.max(Math.random(), scores["happiness"] + scores["neutral"]),
-                    energy: Math.max(Math.random(), scores["anger"] + scores["surprise"]),
-                    acousticness: Math.max(scores["sadness"] + scores["contempt"], Math.random())
+                    valence: Math.max(Math.random(), scores["happiness"] + 0.5 * scores["neutral"]),
+                    energy: 0.1 + 0.9 * (Math.max(Math.random(), scores["anger"] + scores["surprise"])),
+                    acousticness: 0.1 + 0.9 * (Math.max(scores["sadness"] + scores["contempt"], Math.random()))
                 };
 
                 console.log(songAttributes);
